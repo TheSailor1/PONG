@@ -74,6 +74,7 @@ void initGame(void)
 														padHeight };
 	paddle.speedX = 600;
 	paddle.friction = 1.12;
+
 }
 
 void drawBall(void)
@@ -95,6 +96,12 @@ void updateBall(void)
 		{
 			ball.speedY = -ball.speedY;
 		}
+
+	bool collision = CheckCollisionRecs(ball.rec, paddle.rec);
+	if (collision)
+	{
+		ball.speedY = -ball.speedY;
+	}
 
 	ball.velocityX = ball.speedX * GetFrameTime();
 	ball.velocityY = ball.speedY * GetFrameTime();
