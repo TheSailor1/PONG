@@ -2,7 +2,8 @@
 
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
-#define MAX_BRICKS 10
+#define MAX_BRICKS 8
+#define MAX_LINES 4
 
 typedef struct Ball {
 	Rectangle rec;
@@ -25,7 +26,7 @@ typedef struct Brick {
 
 Ball ball = {0};
 Paddle paddle = {0};
-Brick bricks[MAX_BRICKS] = {0};
+Brick bricks[MAX_BRICKS][MAX_LINES] = {0};
 
 // Sound files
 Sound fxBallHitWall;
@@ -35,13 +36,14 @@ void drawBall(void);
 void updateBall(void);
 void drawPaddle(void);
 void updatePaddle(void);
+void drawBricks(void);
 
 int main(void)
 {
 	InitWindow(500, 500, "PONG");
 	InitAudioDevice();
 
-	SetWindowMonitor(1); //TEMP!!!!!
+//	SetWindowMonitor(1); //TEMP!!!!!
 
 	fxBallHitWall = LoadSound("assets/sounds/ball_hit_wall.wav"); 
 	fxBallHitPad = LoadSound("assets/sounds/ball_hit_pad.wav"); 
@@ -57,6 +59,14 @@ int main(void)
 	paddle.speed = 500;
 	paddle.friction = 1.2;
 
+	for (int j = 0; j < MAX_LINES; j++)
+	{
+		for (int i = 0; i < MAX_BRICKS; i++)
+		{
+			bricks[i][j].rec = (Rectangle) {10 + (i * 60),10 + (j * 30) ,50,20};
+			bricks[i][j].active = true;
+		}
+	}
 
 	while (!WindowShouldClose())
 	{
@@ -67,6 +77,7 @@ int main(void)
 		ClearBackground(RAYWHITE);
 		drawBall();
 		drawPaddle();
+		drawBricks();
 		EndDrawing();
 	}
 
@@ -157,4 +168,18 @@ void updatePaddle(void)
 	// Update position of paddle
 	paddle.rec.x += paddle.velocityX;
 
+}
+
+void drawBricks(void)
+{
+	for (int j = 0; j < MAX_LINES; j++)
+	{
+		for (int i = 0; i < MAX_BRICKS; i++)
+		{
+			if (bricks[i][j].active == true)
+			{
+				DrawRectangleRec(bricks[i][j].rec, BLUE);
+			}
+		}
+	}
 }
