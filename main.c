@@ -29,6 +29,8 @@ Paddle paddle = {0};
 Brick bricks[MAX_BRICKS][MAX_LINES] = {0};
 int points = 0;
 int lives = 4;
+int totalBricks = MAX_LINES * MAX_BRICKS;
+int count = 0;
 
 
 // Sound files
@@ -58,6 +60,7 @@ int main(void)
 
 	SetTargetFPS(120);
 
+	ball.active = true;
 	ball.velocity = (Vector2) {300,300};
 	ball.size = 18;
 	ball.rec = (Rectangle) {
@@ -110,47 +113,49 @@ void drawBall(void)
 
 void updateBall(void)
 {
-	bool collision = false;
+	if (ball.active)
+	{
+		bool collision = false;
 
-	if (ball.rec.x < 0)
-	{
-		PlaySound(fxBallHitWall);
-		ball.rec.x = 0;
-		ball.velocity.x = -ball.velocity.x;
-	}
-	if (ball.rec.x + ball.size > WINDOW_WIDTH)
-	{
-		PlaySound(fxBallHitWall);
-		ball.rec.x = WINDOW_WIDTH - ball.size;
-		ball.velocity.x = -ball.velocity.x;
-	}
-	if (ball.rec.y < 30)
-	{
-		PlaySound(fxBallHitWall);
-		ball.rec.y = 30;
-		ball.velocity.y = -ball.velocity.y;
-	}
-	if (ball.rec.y + ball.size > WINDOW_HEIGHT)
-	{
-		PlaySound(fxBallLost);
-		lives -= 1;
-		ball.rec.y = WINDOW_HEIGHT - ball.size;
-		ball.velocity.y = -ball.velocity.y;
-	}
+		if (ball.rec.x < 0)
+		{
+			PlaySound(fxBallHitWall);
+			ball.rec.x = 0;
+			ball.velocity.x = -ball.velocity.x;
+		}
+		if (ball.rec.x + ball.size > WINDOW_WIDTH)
+		{
+			PlaySound(fxBallHitWall);
+			ball.rec.x = WINDOW_WIDTH - ball.size;
+			ball.velocity.x = -ball.velocity.x;
+		}
+		if (ball.rec.y < 30)
+		{
+			PlaySound(fxBallHitWall);
+			ball.rec.y = 30;
+			ball.velocity.y = -ball.velocity.y;
+		}
+		if (ball.rec.y + ball.size > WINDOW_HEIGHT)
+		{
+			PlaySound(fxBallLost);
+			lives -= 1;
+			ball.active = false;
+		}
 
-	// Collision with paddle
-	collision = CheckCollisionRecs(ball.rec, paddle.rec);
-	if (collision == true)
-	{
-		PlaySound(fxBallHitPad);
-		ball.rec.y = paddle.rec.y - ball.size;
-		ball.velocity.y = -ball.velocity.y;
-	}
+		// Collision with paddle
+		collision = CheckCollisionRecs(ball.rec, paddle.rec);
+		if (collision == true)
+		{
+			PlaySound(fxBallHitPad);
+			ball.rec.y = paddle.rec.y - ball.size;
+			ball.velocity.y = -ball.velocity.y;
+		}
 
-	ball.rec.x += ball.velocity.x * GetFrameTime();
-	ball.rec.y += ball.velocity.y * GetFrameTime();
+		ball.rec.x += ball.velocity.x * GetFrameTime();
+		ball.rec.y += ball.velocity.y * GetFrameTime();
+
+	}
 }
-
 void drawPaddle(void)
 {
 	DrawRectangleRec(paddle.rec, BLACK);
@@ -203,6 +208,11 @@ void updateBricks(void)
 {
 	bool brickHit = false;
 
+	if (count == totalBricks)
+	{
+		//CloseWindow();
+	}
+
 	for (int j = 0; j < MAX_LINES; j++)
 	{
 		for (int i = 0; i < MAX_BRICKS; i++)
@@ -214,6 +224,7 @@ void updateBricks(void)
 				{
 					PlaySound(fxBallHitBrick);
 					ball.velocity.y = -ball.velocity.y;
+					count++;
 					bricks[i][j].active = false;
 					points += 10;
 				}
