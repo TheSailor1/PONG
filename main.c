@@ -37,6 +37,7 @@ void updateBall(void);
 void drawPaddle(void);
 void updatePaddle(void);
 void drawBricks(void);
+void updateBricks(void);
 
 int main(void)
 {
@@ -72,6 +73,7 @@ int main(void)
 	{
 		updateBall();
 		updatePaddle();
+		updateBricks();
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
@@ -181,5 +183,26 @@ void drawBricks(void)
 				DrawRectangleRec(bricks[i][j].rec, BLUE);
 			}
 		}
+	}
+}
+
+void updateBricks(void)
+{
+	bool brickHit = false;
+
+	for (int j = 0; j < MAX_LINES; j++)
+	{
+		for (int i = 0; i < MAX_BRICKS; i++)
+		{
+			brickHit = CheckCollisionRecs(ball.rec, bricks[i][j].rec);
+			if (brickHit)
+			{
+				if (bricks[i][j].active == true)
+				{
+					ball.velocity.y = -ball.velocity.y;
+					bricks[i][j].active = false;
+				}
+			}	
+		}	
 	}
 }
