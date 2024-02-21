@@ -1,8 +1,0 @@
-output: main.o
-	clang main.o -o PONG
-
-main.o: main.c
-	clang -c main.c -framework IOKit -framework Cocoa -framework OpenGL $(pkg-config --libs --cflags raylib)
-
-clear:
-	rm *.o PONG
