@@ -1,6 +1,3 @@
-// TOKEN
-// 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
-
 #include "raylib.h"
 
 #define WINDOW_WIDTH 500
