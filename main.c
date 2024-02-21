@@ -5,12 +5,11 @@
 
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
+#define MAX_BRICKS 10
 
 typedef struct Ball {
 	Rectangle rec;
-	int velocityX;
-	int velocityY;
-	int speed;
+	Vector2 velocity;
 	bool active;
 	int size;
 } Ball;
@@ -22,9 +21,16 @@ typedef struct Paddle {
 	float velocityX;
 } Paddle;
 
+typedef struct Brick {
+	Rectangle rec;
+	bool active;
+} Brick;
 
 Ball ball = {0};
 Paddle paddle = {0};
+Brick bricks[MAX_BRICKS] = {0};
+
+// Sound files
 Sound fxBallHitWall;
 Sound fxBallHitPad;
 
@@ -45,8 +51,7 @@ int main(void)
 
 	SetTargetFPS(120);
 
-	ball.velocityX = 300;
-	ball.velocityY = 300;
+	ball.velocity = (Vector2) {300,300};
 	ball.size = 18;
 	ball.rec = (Rectangle) {
 		WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2, ball.size, ball.size};
@@ -89,25 +94,25 @@ void updateBall(void)
 	{
 		PlaySound(fxBallHitWall);
 		ball.rec.x = 0;
-		ball.velocityX = -ball.velocityX;
+		ball.velocity.x = -ball.velocity.x;
 	}
 	if (ball.rec.x + ball.size > WINDOW_WIDTH)
 	{
 		PlaySound(fxBallHitWall);
 		ball.rec.x = WINDOW_WIDTH - ball.size;
-		ball.velocityX = -ball.velocityX;
+		ball.velocity.x = -ball.velocity.x;
 	}
 	if (ball.rec.y < 0)
 	{
 		PlaySound(fxBallHitWall);
 		ball.rec.y = 0;
-		ball.velocityY = -ball.velocityY;
+		ball.velocity.y = -ball.velocity.y;
 	}
 	if (ball.rec.y + ball.size > WINDOW_HEIGHT)
 	{
 		PlaySound(fxBallHitWall);
 		ball.rec.y = WINDOW_HEIGHT - ball.size;
-		ball.velocityY = -ball.velocityY;
+		ball.velocity.y = -ball.velocity.y;
 	}
 
 	// Collision with paddle
@@ -116,13 +121,11 @@ void updateBall(void)
 	{
 		PlaySound(fxBallHitPad);
 		ball.rec.y = paddle.rec.y - ball.size;
-		ball.velocityY = -ball.velocityY;
+		ball.velocity.y = -ball.velocity.y;
 	}
 
-	ball.rec.x += ball.velocityX * GetFrameTime();
-	ball.rec.y += ball.velocityY * GetFrameTime();
-
-
+	ball.rec.x += ball.velocity.x * GetFrameTime();
+	ball.rec.y += ball.velocity.y * GetFrameTime();
 }
 
 void drawPaddle(void)
