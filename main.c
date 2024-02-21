@@ -27,10 +27,15 @@ typedef struct Brick {
 Ball ball = {0};
 Paddle paddle = {0};
 Brick bricks[MAX_BRICKS][MAX_LINES] = {0};
+int points = 0;
+int lives = 4;
+
 
 // Sound files
 Sound fxBallHitWall;
 Sound fxBallHitPad;
+Sound fxBallHitBrick;
+Sound fxBallLost;
 
 void drawBall(void);
 void updateBall(void);
@@ -48,6 +53,8 @@ int main(void)
 
 	fxBallHitWall = LoadSound("assets/sounds/ball_hit_wall.wav"); 
 	fxBallHitPad = LoadSound("assets/sounds/ball_hit_pad.wav"); 
+	fxBallHitBrick = LoadSound("assets/sounds/ball_hit_brick.wav"); 
+	fxBallLost= LoadSound("assets/sounds/ball_lost.wav"); 
 
 	SetTargetFPS(120);
 
@@ -64,7 +71,7 @@ int main(void)
 	{
 		for (int i = 0; i < MAX_BRICKS; i++)
 		{
-			bricks[i][j].rec = (Rectangle) {10 + (i * 60),10 + (j * 30) ,50,20};
+			bricks[i][j].rec = (Rectangle) {10 + (i * 60),40 + (j * 50), 50, 40};
 			bricks[i][j].active = true;
 		}
 	}
@@ -80,11 +87,16 @@ int main(void)
 		drawBall();
 		drawPaddle();
 		drawBricks();
+		DrawRectangle(0, 0, WINDOW_WIDTH, 30, LIGHTGRAY);
+		DrawText(TextFormat("LIVES: %d", lives), 10, 5, 20, BLACK);
+		DrawText(TextFormat("SCORE: %d", points), WINDOW_WIDTH - 300, 5, 20, BLACK);
 		EndDrawing();
 	}
 
 	UnloadSound(fxBallHitWall);
 	UnloadSound(fxBallHitPad);
+	UnloadSound(fxBallHitBrick);
+	UnloadSound(fxBallLost);
 	CloseAudioDevice();
 
 	CloseWindow();
@@ -112,15 +124,16 @@ void updateBall(void)
 		ball.rec.x = WINDOW_WIDTH - ball.size;
 		ball.velocity.x = -ball.velocity.x;
 	}
-	if (ball.rec.y < 0)
+	if (ball.rec.y < 30)
 	{
 		PlaySound(fxBallHitWall);
-		ball.rec.y = 0;
+		ball.rec.y = 30;
 		ball.velocity.y = -ball.velocity.y;
 	}
 	if (ball.rec.y + ball.size > WINDOW_HEIGHT)
 	{
-		PlaySound(fxBallHitWall);
+		PlaySound(fxBallLost);
+		lives -= 1;
 		ball.rec.y = WINDOW_HEIGHT - ball.size;
 		ball.velocity.y = -ball.velocity.y;
 	}
@@ -199,8 +212,10 @@ void updateBricks(void)
 			{
 				if (bricks[i][j].active == true)
 				{
+					PlaySound(fxBallHitBrick);
 					ball.velocity.y = -ball.velocity.y;
 					bricks[i][j].active = false;
+					points += 10;
 				}
 			}	
 		}	
