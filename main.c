@@ -1,44 +1,49 @@
 #include "raylib.h"
 
-#define WIN_WIDTH 600
-#define WIN_HEIGHT 450
+#define WINDOW_WIDTH 500
+#define WINDOW_HEIGHT 500
 
 typedef struct Ball {
 	Rectangle rec;
-	int speedX;
-	int speedY;
-	float velocityX;
-	float velocityY;
+	int velocityX;
+	int velocityY;
+	int speed;
 	bool active;
+	int size;
 } Ball;
 
 typedef struct Paddle {
 	Rectangle rec;
-	int speedX;
-	float velocityX;
+	int speed;
 	float friction;
-	bool active;
+	float velocityX;
 } Paddle;
-
 
 
 Ball ball = {0};
 Paddle paddle = {0};
 
-// Protos
-void initGame(void);
 void drawBall(void);
-void drawPaddle(void);
 void updateBall(void);
+void drawPaddle(void);
 void updatePaddle(void);
 
 int main(void)
 {
+	InitWindow(500, 500, "PONG");
+	SetWindowMonitor(1); //TEMP!!!!!
+	
+	SetTargetFPS(120);
 
-	InitWindow( WIN_WIDTH, WIN_HEIGHT, "PONG!" );
-	SetTargetFPS(60);
+	ball.velocityX = 300;
+	ball.velocityY = 300;
+	ball.size = 18;
+	ball.rec = (Rectangle) {
+		WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2, ball.size, ball.size};
 
-	initGame();
+	paddle.rec = (Rectangle) {WINDOW_WIDTH / 2, WINDOW_HEIGHT - 40, 100, 30};
+	paddle.speed = 500;
+	paddle.friction = 1.2;
 
 	while (!WindowShouldClose())
 	{
@@ -46,35 +51,17 @@ int main(void)
 		updatePaddle();
 
 		BeginDrawing();
-		ClearBackground(BLACK);
-		drawPaddle();
+		ClearBackground(RAYWHITE);
 		drawBall();
+		drawPaddle();
+
+		DrawText(TextFormat("%d", ball.velocityX), 10, 30, 20, BLACK);
+
 		EndDrawing();
 	}
+
 	CloseWindow();
 	return 0;
-}
-
-void initGame(void)
-{
-	int ballSize = 24;
-	ball.rec = (Rectangle) { WIN_WIDTH / 2 - ballSize / 2, 
-													WIN_HEIGHT / 2, 
-													ballSize, 
-													ballSize };
-	ball.speedX = 300;
-	ball.speedY = 300;
-	ball.active = false;
-
-	int padWidth = 100;
-	int padHeight = 30;
-	paddle.rec = (Rectangle) { WIN_WIDTH / 2 - padWidth / 2, 
-														WIN_HEIGHT - padHeight - 30, 
-														padWidth, 
-														padHeight };
-	paddle.speedX = 600;
-	paddle.friction = 1.12;
-
 }
 
 void drawBall(void)
@@ -85,65 +72,54 @@ void drawBall(void)
 void updateBall(void)
 {
 
-	if (ball.rec.x + ball.rec.width > WIN_WIDTH 
-			|| ball.rec.x < 0)
-		{
-			ball.speedX = -ball.speedX;
-		}
-
-	if (ball.rec.y + ball.rec.height > WIN_HEIGHT 
-			|| ball.rec.y < 0)
-		{
-			ball.speedY = -ball.speedY;
-		}
-
-	bool collision = CheckCollisionRecs(ball.rec, paddle.rec);
-	if (collision)
+	if (ball.rec.x < 0)
 	{
-		ball.speedY = -ball.speedY;
+		ball.rec.x = 0;
+		ball.velocityX = -ball.velocityX;
+	}
+	if (ball.rec.x + ball.size > WINDOW_WIDTH)
+	{
+		ball.rec.x = WINDOW_WIDTH - ball.size;
+		ball.velocityX = -ball.velocityX;
 	}
 
-	ball.velocityX = ball.speedX * GetFrameTime();
-	ball.velocityY = ball.speedY * GetFrameTime();
+	if (ball.rec.y < 0)
+	{
+		ball.rec.y = 0;
+		ball.velocityY = -ball.velocityY;
+	}
+	if (ball.rec.y + ball.size > WINDOW_HEIGHT)
+	{
+		ball.rec.y = WINDOW_HEIGHT - ball.size;
+		ball.velocityY = -ball.velocityY;
+	}
 
-	ball.rec.x += ball.velocityX;
-	ball.rec.y += ball.velocityY;
+	ball.rec.x += ball.velocityX * GetFrameTime();
+	ball.rec.y += ball.velocityY * GetFrameTime();
+
+
 }
-
 
 void drawPaddle(void)
 {
-	DrawRectangleRec( paddle.rec, WHITE );
+	DrawRectangleRec(paddle.rec, BLACK);
 }
 
 void updatePaddle(void)
 {
-	// Check boundaries
-	if (paddle.rec.x <= 0)
-	{
-		paddle.velocityX = 0;
-		paddle.rec.x = 0;
-	}
-	if (paddle.rec.x + paddle.rec.width >= WIN_WIDTH)
-	{
-		paddle.velocityX = 0;
-		paddle.rec.x = WIN_WIDTH - paddle.rec.width;
-	}
-
 	if (IsKeyDown(KEY_LEFT))
 	{
-		paddle.velocityX = -paddle.speedX * GetFrameTime();
+		paddle.velocityX = -paddle.speed * GetFrameTime();
 	}
 	if (IsKeyDown(KEY_RIGHT))
 	{
-		paddle.velocityX = paddle.speedX * GetFrameTime();
+		paddle.velocityX = paddle.speed * GetFrameTime();
 	}
 
-
-	// Add friction
+	// Add friction to the paddle
 	paddle.velocityX /= paddle.friction;
 
-	//Update POS
+	// Update position of paddle
 	paddle.rec.x += paddle.velocityX;
-	
+
 }
