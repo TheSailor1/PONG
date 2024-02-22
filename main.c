@@ -55,8 +55,6 @@ void updateMenu(void);
 void drawGameOver(void);
 void updateGameOver(void);
 void drawWin(void);
-void updateWin(void);
-
 int main(void)
 {
 	InitWindow(500, 500, "PONG");
