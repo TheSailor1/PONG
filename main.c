@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include <string.h>
 
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
@@ -31,6 +32,8 @@ int points = 0;
 int lives = 4;
 int totalBricks = MAX_LINES * MAX_BRICKS;
 int count = 0;
+int ballTimer = 30;
+int gameState = 0; //0 Menu / 1 Game / 2 WIN / 3 Gameover
 
 
 // Sound files
@@ -39,12 +42,17 @@ Sound fxBallHitPad;
 Sound fxBallHitBrick;
 Sound fxBallLost;
 
+void resetBall(void);
 void drawBall(void);
 void updateBall(void);
 void drawPaddle(void);
 void updatePaddle(void);
 void drawBricks(void);
 void updateBricks(void);
+void drawGame(void);
+void updateGame(void);
+void drawMenu(void);
+void updateMenu(void);
 
 int main(void)
 {
@@ -60,7 +68,6 @@ int main(void)
 
 	SetTargetFPS(120);
 
-	ball.active = true;
 	ball.velocity = (Vector2) {300,300};
 	ball.size = 18;
 	ball.rec = (Rectangle) {
@@ -81,18 +88,25 @@ int main(void)
 
 	while (!WindowShouldClose())
 	{
-		updateBall();
-		updatePaddle();
-		updateBricks();
+		if (gameState == 0)
+		{
+			updateMenu();
+		}
+		else if (gameState == 1)
+		{
+			updateGame();
+		}
 
 		BeginDrawing();
-		ClearBackground(RAYWHITE);
-		drawBall();
-		drawPaddle();
-		drawBricks();
-		DrawRectangle(0, 0, WINDOW_WIDTH, 30, LIGHTGRAY);
-		DrawText(TextFormat("LIVES: %d", lives), 10, 5, 20, BLACK);
-		DrawText(TextFormat("SCORE: %d", points), WINDOW_WIDTH - 300, 5, 20, BLACK);
+		if (gameState == 0)
+		{
+			drawMenu();
+		}
+		else if (gameState == 1)
+		{
+			drawGame();
+		}
+
 		EndDrawing();
 	}
 
@@ -113,6 +127,18 @@ void drawBall(void)
 
 void updateBall(void)
 {
+	if (lives < 0)
+	{
+		gameState = 0;
+	}
+
+	if (ballTimer == 0)
+		ball.active = true;
+	else
+	{
+		ballTimer = ballTimer - (1 * GetFrameTime());
+	}
+
 	if (ball.active)
 	{
 		bool collision = false;
@@ -139,7 +165,7 @@ void updateBall(void)
 		{
 			PlaySound(fxBallLost);
 			lives -= 1;
-			ball.active = false;
+			resetBall();
 		}
 
 		// Collision with paddle
@@ -210,7 +236,7 @@ void updateBricks(void)
 
 	if (count == totalBricks)
 	{
-		//CloseWindow();
+		gameState = 0;
 	}
 
 	for (int j = 0; j < MAX_LINES; j++)
@@ -230,5 +256,46 @@ void updateBricks(void)
 				}
 			}	
 		}	
+	}
+}
+
+void resetBall(void)
+{
+	ball.velocity = (Vector2) {300,300};
+	ball.rec = (Rectangle) {
+		WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2, ball.size, ball.size};
+	ballTimer = 60;
+	ball.active = false;
+}
+
+void drawGame(void)
+{
+	ClearBackground(RAYWHITE);
+	drawBall();
+	drawPaddle();
+	drawBricks();
+	DrawRectangle(0, 0, WINDOW_WIDTH, 30, LIGHTGRAY);
+	DrawText(TextFormat("LIVES: %d", lives), 10, 5, 20, BLACK);
+	DrawText(TextFormat("SCORE: %d", points), WINDOW_WIDTH - 300, 5, 20, BLACK);
+}
+
+void updateGame(void)
+{
+	updateBall();
+	updatePaddle();
+	updateBricks();
+}
+
+void drawMenu(void)
+{
+	ClearBackground(BLACK);
+	DrawText("BWONG!!", 200, 100, 50, RAYWHITE);
+}
+
+void updateMenu(void)
+{
+	if (IsKeyPressed(KEY_SPACE))
+	{
+		gameState = 1;
 	}
 }
