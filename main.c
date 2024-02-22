@@ -35,7 +35,6 @@ int count = 0;
 int ballTimer = 30;
 int gameState = 0; //0 Menu / 1 Game / 2 WIN / 3 Gameover
 
-
 // Sound files
 Sound fxBallHitWall;
 Sound fxBallHitPad;
@@ -53,6 +52,10 @@ void drawGame(void);
 void updateGame(void);
 void drawMenu(void);
 void updateMenu(void);
+void drawGameOver(void);
+void updateGameOver(void);
+void drawWin(void);
+void updateWin(void);
 
 int main(void)
 {
@@ -96,6 +99,14 @@ int main(void)
 		{
 			updateGame();
 		}
+		else if (gameState == 2)
+		{
+			updateWin();
+		}
+		else if (gameState == 3)
+		{
+			updateGameOver();
+		}
 
 		BeginDrawing();
 		if (gameState == 0)
@@ -105,6 +116,14 @@ int main(void)
 		else if (gameState == 1)
 		{
 			drawGame();
+		}
+		else if (gameState == 2)
+		{
+			drawWin();
+		}
+		else if (gameState == 3)
+		{
+			drawGameOver();
 		}
 
 		EndDrawing();
@@ -129,7 +148,7 @@ void updateBall(void)
 {
 	if (lives < 0)
 	{
-		gameState = 0;
+		gameState = 3;
 	}
 
 	if (ballTimer == 0)
@@ -236,7 +255,7 @@ void updateBricks(void)
 
 	if (count == totalBricks)
 	{
-		gameState = 0;
+		gameState = 2;
 	}
 
 	for (int j = 0; j < MAX_LINES; j++)
@@ -290,6 +309,7 @@ void drawMenu(void)
 {
 	ClearBackground(BLACK);
 	DrawText("BWONG!!", 200, 100, 50, RAYWHITE);
+	DrawText("PRESS SPACE TO START", 100, 300, 20, RAYWHITE);
 }
 
 void updateMenu(void)
@@ -298,4 +318,32 @@ void updateMenu(void)
 	{
 		gameState = 1;
 	}
+}
+
+void drawWin(void)
+{
+	ClearBackground(GREEN);
+	DrawText("YOU WON!", 100, 100, 50, DARKGREEN);
+}
+
+void updateWin(void)
+{
+	if (IsKeyPressed(KEY_SPACE))
+		{
+			gameState = 0;
+		}
+}
+
+void updateGameOver(void)
+{
+	if (IsKeyPressed(KEY_SPACE))
+	{
+		gameState = 0;
+	}
+}
+
+void drawGameOver(void)
+{
+	ClearBackground(RED);
+	DrawText("Game Over!", 100, 100, 40, RAYWHITE);
 }
